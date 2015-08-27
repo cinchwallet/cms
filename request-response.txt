@@ -1,0 +1,26 @@
+getserverstatus
+{"responseCode":"0000","responseMsg":"Connection with server is OK"}
+
+getcarddetail
+{"cardNumber":"8888880018904563","txnDate":"2014-03-20T17:34:50"}
+{"responseCode":"0000","cardHolderName":"Mr. Manoj Singh"}
+
+getbalance
+{"cardNumber":"8888880018904563","txnDate":"2014-03-20T17:34:50"}
+{"responseCode":"0000","balance":380.0}
+
+sale
+{"cardNumber":"8888880018904563","txnDate":"2014-03-20T17:34:50","txnAmount":20}
+{"responseCode":"0000","balance":340.0}
+
+load
+{"cardNumber":"8888880018904563","txnDate":"2014-03-20T17:34:50","txnAmount":20}
+{"responseCode":"0000","balance":400.0}
+
+activate
+{"cardNumber":"8888880018904564","txnDate":"2014-03-20T17:34:50","txnAmount":20}
+{"responseCode":"0000","balance":200.0}
+
+deactivate
+{"cardNumber":"8888880018904564","txnDate":"2014-03-20T17:34:50","txnAmount":20}
+{"responseCode":"0000","balance":200.0}
