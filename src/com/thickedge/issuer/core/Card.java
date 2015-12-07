@@ -1,12 +1,26 @@
 package com.thickedge.issuer.core;
 
+import java.sql.Date;
+
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+
+@JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
 public class Card {
 
     private String cardNumber;
     private String status;
     private Double balance;
+    private Integer points;
+    private Date pointExpireOn;
+    private String membershipId;
 
-    public Double getBalance() {
+    public String getMembershipId() {
+		return membershipId;
+	}
+	public void setMembershipId(String membershipId) {
+		this.membershipId = membershipId;
+	}
+	public Double getBalance() {
         return balance;
     }
     public void setBalance(Double balance) {
@@ -24,6 +38,18 @@ public class Card {
     public void setStatus(String status) {
         this.status = status;
     }
+	public Integer getPoints() {
+		return points;
+	}
+	public void setPoints(Integer points) {
+		this.points = points;
+	}
+	public Date getPointExpireOn() {
+		return pointExpireOn;
+	}
+	public void setPointExpireOn(Date pointExpireOn) {
+		this.pointExpireOn = pointExpireOn;
+	}
 
 
 

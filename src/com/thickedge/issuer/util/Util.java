@@ -2,6 +2,8 @@ package com.thickedge.issuer.util;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
+import java.util.Random;
+import java.util.UUID;
 
 public class Util {
 
@@ -22,8 +24,14 @@ public class Util {
 	}
 	return md5;
     }
+    
+    public static String getMembershipId(){
+    	return Math.abs(new Random().nextInt())+"";
+    	
+    }
 
     public static void main(String[] args) {
 	System.out.println(md5("8888888800006270"));
+	System.out.println(getMembershipId());
     }
 }

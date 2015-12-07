@@ -1,26 +1,33 @@
-getserverstatus
+endpoint: http://localhost:8080/Issuer/process/loyalty/api/
+
+getserverstatus-GET
 {"responseCode":"0000","responseMsg":"Connection with server is OK"}
 
-getcarddetail
-{"cardNumber":"8888880018904563","txnDate":"2014-03-20T17:34:50"}
-{"responseCode":"0000","cardHolderName":"Mr. Manoj Singh"}
+/carddetail/{cardNumber}
+{"responseCode":"0000","responseMsg":"Approved","card":{"status":"OPEN","points":136,"pointExpireOn":"2015-11-25"}}
 
-getbalance
-{"cardNumber":"8888880018904563","txnDate":"2014-03-20T17:34:50"}
-{"responseCode":"0000","balance":380.0}
+/userprofile/{cardNumber}
+{"responseCode":"0000","responseMsg":"Approved","cardHolder":{"membershipId":"12091020","firstName":"Manoj","lastName":"Singh","phoneNumber":"9810403543","email":"m.manojsingh@gmail.com","address":"Sector 53","city":"Noida","state":"UP","country":"India","isActive":true}}
 
-sale
-{"cardNumber":"8888880018904563","txnDate":"2014-03-20T17:34:50","txnAmount":20}
-{"responseCode":"0000","balance":340.0}
+registeruser
+{"merchantId":"10000000001","txnDate":"2015-08-17T18:18:21.305+08:00","terminalId":"10000000001","stan":"201508101781", "cardNumber":"8888880018904568", "cardHolder":{"firstName":"Manoj","lastName":"Singh","gender":"M","dateOfBirth":"1982-06-29","phoneNumber":"9810403543","email":"m.manojsingh@gmail.com","address":"Noida","city":"Noida","state":"UP","zip":"201301","country":"India"}}
+{"responseCode":"0000","responseMsg":"Approved","card":{"status":"OPEN","points":0,"membershipId":"1989611359"}}
 
-load
-{"cardNumber":"8888880018904563","txnDate":"2014-03-20T17:34:50","txnAmount":20}
-{"responseCode":"0000","balance":400.0}
+earnpoint
+{"merchantId":"10000000001","txnDate":"2015-08-17T18:18:21.305+08:00","terminalId":"10000000001","stan":"201508101781", "cardNumber":"8888880018904568","points":340}
+{"responseCode":"0000","responseMsg":"Approved","pointsAvailable":680}
 
-activate
-{"cardNumber":"8888880018904564","txnDate":"2014-03-20T17:34:50","txnAmount":20}
-{"responseCode":"0000","balance":200.0}
+burnpoint
+{"merchantId":"10000000001","txnDate":"2015-08-17T18:18:21.305+08:00","terminalId":"10000000001","stan":"201508101781", "cardNumber":"8888880018904568","points":20}
+{"responseCode":"0000","responseMsg":"Approved","pointsAvailable":660,"pointsExpireOn":"2015-11-25"}
+
+addpoint
+{"merchantId":"10000000001","txnDate":"2015-08-17T18:18:21.305+08:00","terminalId":"10000000001","stan":"201508101781", "cardNumber":"8888880018904568","points":20}
+{"responseCode":"0000","responseMsg":"Approved","pointsAvailable":660,"pointsExpireOn":"2015-11-25"}
+
+reissuecard
+{"merchantId":"10000000001","txnDate":"2015-08-17T18:18:21.305+08:00","terminalId":"10000000001","stan":"201508101781", "cardNumber":"8888880018904568","newCardNumber":"8888880018904570"}
 
 deactivate
-{"cardNumber":"8888880018904564","txnDate":"2014-03-20T17:34:50","txnAmount":20}
-{"responseCode":"0000","balance":200.0}
+"merchantId":"10000000001","txnDate":"2015-08-17T18:18:21.305+08:00","terminalId":"10000000001","stan":"201508101781", "cardNumber":"8888880018904568"}
+

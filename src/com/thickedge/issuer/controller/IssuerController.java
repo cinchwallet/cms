@@ -4,21 +4,23 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import com.thickedge.issuer.constant.AppConstant;
 import com.thickedge.issuer.core.Request;
 import com.thickedge.issuer.core.Response;
 import com.thickedge.issuer.processor.TransactionProcessor;
 
 
 
-@Path("/issuer/api/")
+@Path("/loyalty/api/")
 public class IssuerController {
 
 
 	@GET
-	@Path("/getserverstatus")
+	@Path("/serverstatus")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getServerStatus() {
 		Response response = new Response();
@@ -27,60 +29,96 @@ public class IssuerController {
 		return response;
 
 	}
-
+	
 	@POST
-	@Path("/getcarddetail")
+	@Path("/registeruser")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getCardDetail(Request request) {
-		return TransactionProcessor.getInstance().getCustomerDetail(request);
+	public Response registerUser(Request request) {
+		return TransactionProcessor.getInstance().processTransaction(request, AppConstant.OperationType.REGISTERUSER);
+
+	}
+
+	@GET
+	@Path("/carddetail/{cardNumber}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getCardDetail(@PathParam("cardNumber") String cardNumber) {
+		Request request = new Request();
+		request.setCardNumber(cardNumber);
+		return TransactionProcessor.getInstance().processTransaction(request, AppConstant.OperationType.CARDDETAIL);
+
+	}
+
+	@GET
+	@Path("/userprofile/{cardNumber}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getUserProfile(@PathParam("cardNumber") String cardNumber) {
+		Request request = new Request();
+		request.setCardNumber(cardNumber);
+		return TransactionProcessor.getInstance().processTransaction(request, AppConstant.OperationType.USEPROFILE);
 
 	}
 
 	@POST
-	@Path("/getbalance")
+	@Path("/burnpoint")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getBalance(Request request) {
-		return TransactionProcessor.getInstance().getCardBalance(request);
-
-	}
-
-
-	@POST
-	@Path("/sale")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response doSale(Request request) {
-		return TransactionProcessor.getInstance().doSale(request);
+	public Response burnPoint(Request request) {
+		return TransactionProcessor.getInstance().processTransaction(request, AppConstant.OperationType.BURNPOINT);
 
 	}
 
 	@POST
-	@Path("/load")
+	@Path("/earnpoint")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response doReload(Request request) {
-		return TransactionProcessor.getInstance().doReload(request);
+	public Response earnPoint(Request request) {
+		return TransactionProcessor.getInstance().processTransaction(request, AppConstant.OperationType.EARNPOINT);
 
 	}
-
 
 	@POST
-	@Path("/activate")
+	@Path("/addpoint")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response activateCard(Request request) {
-		return TransactionProcessor.getInstance().activateCard(request);
+	public Response addPoint(Request request) {
+		return TransactionProcessor.getInstance().processTransaction(request, AppConstant.OperationType.ADDPOINT);
 
 	}
 
+	@POST
+	@Path("/reissuecard")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response reissueCard(Request request) {
+		return TransactionProcessor.getInstance().processTransaction(request, AppConstant.OperationType.REISSUECARD);
+
+	}
+
+	@POST
+	@Path("/reverse")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response reverseTxn(Request request) {
+		return TransactionProcessor.getInstance().processTransaction(request, AppConstant.OperationType.REVERSE);
+
+	}
+
+	@POST
+	@Path("/cancel")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response cancelTxn(Request request) {
+		return TransactionProcessor.getInstance().processTransaction(request, AppConstant.OperationType.CANCEL);
+
+	}
+	
 	@POST
 	@Path("/deactivate")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response deactivateCard(Request request) {
-		return TransactionProcessor.getInstance().deactivateCard(request);
+		return TransactionProcessor.getInstance().processTransaction(request, AppConstant.OperationType.DEACTIVATE);
 
 	}
 
