@@ -18,8 +18,14 @@ public class CardHolder {
     private String zip;
     private String country;
     private Boolean isActive;
+    private Integer points;
     
-    
+	public Integer getPoints() {
+		return points;
+	}
+	public void setPoints(Integer points) {
+		this.points = points;
+	}
 	public Boolean getIsActive() {
 		return isActive;
 	}

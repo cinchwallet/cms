@@ -10,6 +10,7 @@ import java.util.Date;
 import com.thickedge.issuer.constant.AppConstant;
 import com.thickedge.issuer.core.Card;
 import com.thickedge.issuer.core.CardHolder;
+import com.thickedge.issuer.core.Loyalty;
 import com.thickedge.issuer.core.Request;
 import com.thickedge.issuer.util.DBConnection;
 import com.thickedge.issuer.util.Util;
@@ -53,16 +54,25 @@ public class CardDao extends DBStatements {
 
 			lPreparedStatement.executeUpdate();
 
-			// change card status to OPEN
-			index = 1;
-			lPreparedStatement = lConnection.prepareStatement(UPDTAE_CARD_STATUS);
-			lPreparedStatement.setString(index++, AppConstant.CardStatus.OPEN.name());
-			lPreparedStatement.setTimestamp(index++, new Timestamp(new Date().getTime()));
-			lPreparedStatement.setString(index++, request.getCardNumber());
-			lPreparedStatement.executeUpdate();
+			if(request.getCardNumber()!=null && request.getCardNumber().length()>0){
+				// change card status to OPEN, card existance should be checked as well.
+				index = 1;
+				lPreparedStatement = lConnection.prepareStatement(UPDTAE_CARD_STATUS);
+				lPreparedStatement.setString(index++, AppConstant.CardStatus.OPEN.name());
+				lPreparedStatement.setTimestamp(index++, new Timestamp(new Date().getTime()));
+				lPreparedStatement.setString(index++, request.getCardNumber());
+				int result = lPreparedStatement.executeUpdate();
+				if(result>0){
+					// assign card to new user
+					assignCardToUser(membershipId, request.getCardNumber(), lConnection);
+				}else{
+					// card do not existing
+				}
+			}
 
-			// assign card to new user
-			assignCardToUser(membershipId, request.getCardNumber(), lConnection);
+			//registration is done without card, hence mobile is the KEY
+			assignCustomerLoyalty(membershipId, request.getPoints(), "2512", lConnection);
+
 			
 			lConnection.commit();
 		} catch (SQLException _sqlException) {
@@ -77,6 +87,18 @@ public class CardDao extends DBStatements {
 		return membershipId;
 	}
 
+	private int assignCustomerLoyalty(String membershipId, int points, String pointsExpireOn, Connection lConnection) throws SQLException{
+		int index = 1;
+		PreparedStatement lPreparedStatement = lConnection.prepareStatement(ASSIGN_CUSTOMER_LOYALTY);
+		lPreparedStatement.setString(index++, membershipId);
+		lPreparedStatement.setInt(index++, points);
+		lPreparedStatement.setString(index++, pointsExpireOn);
+		lPreparedStatement.setTimestamp(index++, new Timestamp(new Date().getTime()));
+		lPreparedStatement.setTimestamp(index++, new Timestamp(new Date().getTime()));
+		return lPreparedStatement.executeUpdate();
+	}
+
+	
 	private int assignCardToUser(String membershipId, String cardNumber, Connection lConnection) throws SQLException{
 		int index = 1;
 		PreparedStatement lPreparedStatement = lConnection.prepareStatement(ASSOCIATE_USER_CARD);
@@ -86,7 +108,6 @@ public class CardDao extends DBStatements {
 		lPreparedStatement.setTimestamp(index++, new Timestamp(new Date().getTime()));
 		lPreparedStatement.setTimestamp(index++, new Timestamp(new Date().getTime()));
 		return lPreparedStatement.executeUpdate();
-		
 	}
 	
 	private int unAssignCardToUser(String membershipId, String cardNumber, Connection lConnection) throws SQLException{
@@ -114,9 +135,10 @@ public class CardDao extends DBStatements {
 			lResultSet = lPreparedStatement.executeQuery();
 			if (lResultSet != null && lResultSet.next()) {
 				card = new Card();
-				card.setPoints(lResultSet.getInt("points"));
-				card.setPointExpireOn(lResultSet.getDate("points_expire_on"));
-				card.setStatus(lResultSet.getString("status"));
+				card.setPoints(lResultSet.getInt("POINTS"));
+				card.setPointExpireOn(lResultSet.getString("POINTS_EXPIRE_ON"));
+				card.setStatus(lResultSet.getString("STATUS"));
+				card.setCardNumber(lResultSet.getString("CARD_PRODUCT"));
 			}
 		} catch (SQLException _sqlException) {
 			_sqlException.printStackTrace();
@@ -131,42 +153,102 @@ public class CardDao extends DBStatements {
 	}
 
 	/*
-	 * Read the card and card holder data. It returns the card holder detail
-	 * along with card detail like balance, status and points expiry
+	 * Read the card holder data for given card number. It returns the card holder detail
+	 * along with loyalty point balance.
 	 */
-	public CardHolder getCardHolderProfile(String cardNumber) {
+	public CardHolder getCardHolderProfileByCard(String cardNumber) {
 		Connection lConnection = null;
 		PreparedStatement lPreparedStatement = null;
 		ResultSet lResultSet = null;
 		CardHolder customer = null;
 		try {
 			lConnection = DBConnection.getTxnConnection();
-			lPreparedStatement = lConnection.prepareStatement(SELECT_USER_PROFILE);
+			lPreparedStatement = lConnection.prepareStatement(SELECT_USER_PROFILE_BY_CARD);
 			lPreparedStatement.setString(1, cardNumber);
 			lResultSet = lPreparedStatement.executeQuery();
-			if (lResultSet != null && lResultSet.next()) {
-				customer = new CardHolder();
-
-				customer.setMembershipId(lResultSet.getString("CUSTOMER_ID"));
-				// customer.set(lResultSet.getString("TITLE"));
-				customer.setFirstName(lResultSet.getString("FIRST_NAME"));
-				customer.setLastName(lResultSet.getString("LAST_NAME"));
-				customer.setAddress(lResultSet.getString("ADDRESS_LINE1"));
-				customer.setCity(lResultSet.getString("CITY"));
-				customer.setState(lResultSet.getString("STATE"));
-				customer.setCountry(lResultSet.getString("COUNTRY"));
-				customer.setPhoneNumber(lResultSet.getString("PHONE_WORK"));
-				// customer.set(lResultSet.getString("PHONE_HOME"));
-				// customer.set(lResultSet.getString("PHONE_MOBILE"));
-				customer.setEmail(lResultSet.getString("EMAIL_ADDRESS"));
-				customer.setIsActive(lResultSet.getBoolean("IS_ACTIVE"));
-			}
+			customer = populateCustomerDetail(lResultSet);
+			
 		} catch (SQLException _sqlException) {
 			_sqlException.printStackTrace();
 		} catch (Exception _Exception) {
 			_Exception.printStackTrace();
 		} finally {
 			DBConnection.closeAll(lResultSet, lPreparedStatement, lConnection);
+		}
+		return customer;
+	}
+	
+	/*
+	 * Read the card holder data for given phone number. It returns the card holder detail
+	 * along with loyalty point balance.
+	 */
+	public CardHolder getCardHolderProfileByPhone(String phoneNumber) {
+		Connection lConnection = null;
+		PreparedStatement lPreparedStatement = null;
+		ResultSet lResultSet = null;
+		CardHolder customer = null;
+		try {
+			lConnection = DBConnection.getTxnConnection();
+			lPreparedStatement = lConnection.prepareStatement(SELECT_USER_PROFILE_BY_PHONE);
+			lPreparedStatement.setString(1, phoneNumber);
+			lResultSet = lPreparedStatement.executeQuery();
+			customer = populateCustomerDetail(lResultSet);
+			
+		} catch (SQLException _sqlException) {
+			_sqlException.printStackTrace();
+		} catch (Exception _Exception) {
+			_Exception.printStackTrace();
+		} finally {
+			DBConnection.closeAll(lResultSet, lPreparedStatement, lConnection);
+		}
+		return customer;
+	}
+
+	/*
+	 * Read the card holder data for given membershipId. It returns the card holder detail
+	 * along with loyalty point balance.
+	 */
+	public CardHolder getCardHolderProfileById(String membershipId) {
+		Connection lConnection = null;
+		PreparedStatement lPreparedStatement = null;
+		ResultSet lResultSet = null;
+		CardHolder customer = null;
+		try {
+			lConnection = DBConnection.getTxnConnection();
+			lPreparedStatement = lConnection.prepareStatement(SELECT_USER_PROFILE_BY_ID);
+			lPreparedStatement.setString(1, membershipId);
+			lResultSet = lPreparedStatement.executeQuery();
+			customer = populateCustomerDetail(lResultSet);
+			
+		} catch (SQLException _sqlException) {
+			_sqlException.printStackTrace();
+		} catch (Exception _Exception) {
+			_Exception.printStackTrace();
+		} finally {
+			DBConnection.closeAll(lResultSet, lPreparedStatement, lConnection);
+		}
+		return customer;
+	}
+
+	private CardHolder populateCustomerDetail(ResultSet lResultSet) throws SQLException {
+		CardHolder customer = null;
+		if (lResultSet != null && lResultSet.next()) {
+			customer = new CardHolder();
+
+			customer.setMembershipId(lResultSet.getString("CUSTOMER_ID"));
+			// customer.set(lResultSet.getString("TITLE"));
+			customer.setFirstName(lResultSet.getString("FIRST_NAME"));
+			customer.setLastName(lResultSet.getString("LAST_NAME"));
+			customer.setAddress(lResultSet.getString("ADDRESS_LINE1"));
+			customer.setCity(lResultSet.getString("CITY"));
+			customer.setState(lResultSet.getString("STATE"));
+			customer.setCountry(lResultSet.getString("COUNTRY"));
+			customer.setPhoneNumber(lResultSet.getString("PHONE_WORK"));
+			// customer.set(lResultSet.getString("PHONE_HOME"));
+			// customer.set(lResultSet.getString("PHONE_MOBILE"));
+			customer.setEmail(lResultSet.getString("EMAIL"));
+			customer.setIsActive(lResultSet.getBoolean("IS_ACTIVE"));
+			customer.setPoints(lResultSet.getInt("POINTS"));
 		}
 		return customer;
 	}
@@ -199,10 +281,37 @@ public class CardDao extends DBStatements {
 	}
 
 	/*
+	 * It simply updates the loyalty points. Can be used for earn point,
+	 * burn point and add point API.
+	 */
+	public void updateLoyaltyPoints(String membershipId, int points) throws Exception{
+		Connection lConnection = null;
+		PreparedStatement lPreparedStatement = null;
+		ResultSet lResultSet = null;
+		try {
+			int index=1;
+			lConnection = DBConnection.getTxnConnection();
+			lPreparedStatement = lConnection.prepareStatement(UPDTAE_LOYALTY_POINT);
+			lPreparedStatement.setInt(index++, points);
+			lPreparedStatement.setTimestamp(index++, new Timestamp(new Date().getTime()));
+			lPreparedStatement.setString(index++, membershipId);
+			lPreparedStatement.executeUpdate();
+		} catch (SQLException _sqlException) {
+			_sqlException.printStackTrace();
+			throw _sqlException;
+		} catch (Exception _Exception) {
+			_Exception.printStackTrace();
+			throw _Exception;
+		} finally {
+			DBConnection.closeAll(lResultSet, lPreparedStatement, lConnection);
+		}
+	}
+
+	/*
 	 * Modifies the card status. Valid status can be NEW, OPEN, CLOSED. Service
 	 * used while registration and deactivation process.
 	 */
-	public void updateCardStatus(String cardNumber, String status) {
+	public void updateCardStatus(String cardNumber, String status) throws Exception{
 		Connection lConnection = null;
 		PreparedStatement lPreparedStatement = null;
 		ResultSet lResultSet = null;
@@ -216,8 +325,10 @@ public class CardDao extends DBStatements {
 			int count = lPreparedStatement.executeUpdate();
 		} catch (SQLException _sqlException) {
 			_sqlException.printStackTrace();
+			throw _sqlException;
 		} catch (Exception _Exception) {
 			_Exception.printStackTrace();
+			throw _Exception;
 		} finally {
 			DBConnection.closeAll(lResultSet, lPreparedStatement, lConnection);
 		}
@@ -226,7 +337,7 @@ public class CardDao extends DBStatements {
 	/*
 	 * Reissure a new card against the old card
 	 */
-	public Card reissueCard(Request request) throws Exception{
+	public Card reissueCard(Request request, String membershipId) throws Exception{
 		Connection lConnection = null;
 		PreparedStatement lPreparedStatement = null;
 		ResultSet lResultSet = null;
@@ -234,16 +345,12 @@ public class CardDao extends DBStatements {
 		try {
 			lConnection = DBConnection.getTxnConnection();
 			lConnection.setAutoCommit(false);
-			// get the customer info for given old card
-			CardHolder cardHolder = getCardHolderProfile(request.getCardNumber());
 			// change the new card status to OPEN
 			updateCardStatus(request.getNewCardNumber(), AppConstant.CardStatus.OPEN.name());
 			//de-associate old card with user
-			unAssignCardToUser(cardHolder.getMembershipId(), request.getCardNumber(), lConnection);
+			unAssignCardToUser(membershipId, request.getCardNumber(), lConnection);
 			// assign new card to user
-			assignCardToUser(cardHolder.getMembershipId(), request.getNewCardNumber(), lConnection);
-			// TODO - transfer all points to the new card
-			
+			assignCardToUser(membershipId, request.getNewCardNumber(), lConnection);
 			// deactivate old card
 			updateCardStatus(request.getCardNumber(), AppConstant.CardStatus.CLOSED.name());
 			
@@ -259,5 +366,67 @@ public class CardDao extends DBStatements {
 		}
 		return card;
 	}
+
+	
+	/*
+	 * Read the membershipId and points for a given card. 
+	 */
+	public Loyalty getLoyaltyDetail(String cardNumber) throws Exception{
+		Connection lConnection = null;
+		PreparedStatement lPreparedStatement = null;
+		ResultSet lResultSet = null;
+		Loyalty loyalty = null;
+		try {
+			lConnection = DBConnection.getTxnConnection();
+			lPreparedStatement = lConnection.prepareStatement(SELECT_LOYALTY_DETAIL);
+			lPreparedStatement.setString(1, cardNumber);
+			lResultSet = lPreparedStatement.executeQuery();
+			if (lResultSet != null && lResultSet.next()) {
+				loyalty = new Loyalty();
+				loyalty.setMembershipId(lResultSet.getString("MEMBERSHIP_ID"));
+				loyalty.setLoyaltyPoints(lResultSet.getInt("POINTS"));
+			}
+		} catch (SQLException _sqlException) {
+			_sqlException.printStackTrace();
+			throw _sqlException;
+		} catch (Exception _Exception) {
+			_Exception.printStackTrace();
+			throw _Exception;
+		} finally {
+			DBConnection.closeAll(lResultSet, lPreparedStatement, lConnection);
+		}
+		return loyalty;
+	}
+
+	/*
+	 * Read the membershipId and points for a given card. 
+	 */
+	public Loyalty getLoyaltyDetailForPhone(String phoneNumber) throws Exception{
+		Connection lConnection = null;
+		PreparedStatement lPreparedStatement = null;
+		ResultSet lResultSet = null;
+		Loyalty loyalty = null;
+		try {
+			lConnection = DBConnection.getTxnConnection();
+			lPreparedStatement = lConnection.prepareStatement(SELECT_LOYALTY_DETAIL_FOR_PHONE);
+			lPreparedStatement.setString(1, phoneNumber);
+			lResultSet = lPreparedStatement.executeQuery();
+			if (lResultSet != null && lResultSet.next()) {
+				loyalty = new Loyalty();
+				loyalty.setMembershipId(lResultSet.getString("MEMBERSHIP_ID"));
+				loyalty.setLoyaltyPoints(lResultSet.getInt("POINTS"));
+			}
+		} catch (SQLException _sqlException) {
+			_sqlException.printStackTrace();
+			throw _sqlException;
+		} catch (Exception _Exception) {
+			_Exception.printStackTrace();
+			throw _Exception;
+		} finally {
+			DBConnection.closeAll(lResultSet, lPreparedStatement, lConnection);
+		}
+		return loyalty;
+	}
+
 
 }

@@ -21,8 +21,33 @@ public class Request {
 	private CardHolder cardHolder;
 	//reissue card
 	private String newCardNumber;
+	//loyalty by phone number
+	private String phoneNumber;
+	private String membershipId;
+	/*
+	 * upc is required for registration. If card number is not given, upc will be used to get card product.
+	 */
+	private String upc;
 	
-
+	
+	public String getUpc() {
+		return upc;
+	}
+	public void setUpc(String upc) {
+		this.upc = upc;
+	}
+	public String getMembershipId() {
+		return membershipId;
+	}
+	public void setMembershipId(String membershipId) {
+		this.membershipId = membershipId;
+	}
+	public String getPhoneNumber() {
+		return phoneNumber;
+	}
+	public void setPhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
+	}
 	public String getNewCardNumber() {
 		return newCardNumber;
 	}

@@ -17,7 +17,7 @@ public class Response {
 	private String responseMsg;
 	private Double balance;
 	private Integer pointsAvailable;
-	private Date pointsExpireOn;
+	private String pointsExpireOn;
 	private String accountStatus;
 	
 	private Card card;
@@ -97,11 +97,11 @@ public class Response {
 		this.pointsAvailable = pointsAvailable;
 	}
 
-	public Date getPointsExpireOn() {
+	public String getPointsExpireOn() {
 		return pointsExpireOn;
 	}
 
-	public void setPointsExpireOn(Date pointsExpireOn) {
+	public void setPointsExpireOn(String pointsExpireOn) {
 		this.pointsExpireOn = pointsExpireOn;
 	}
 

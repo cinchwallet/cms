@@ -6,28 +6,67 @@ getserverstatus-GET
 /carddetail/{cardNumber}
 {"responseCode":"0000","responseMsg":"Approved","card":{"status":"OPEN","points":136,"pointExpireOn":"2015-11-25"}}
 
-/userprofile/{cardNumber}
+/userprofile/c/{cardNumber}
 {"responseCode":"0000","responseMsg":"Approved","cardHolder":{"membershipId":"12091020","firstName":"Manoj","lastName":"Singh","phoneNumber":"9810403543","email":"m.manojsingh@gmail.com","address":"Sector 53","city":"Noida","state":"UP","country":"India","isActive":true}}
 
-registeruser
-{"merchantId":"10000000001","txnDate":"2015-08-17T18:18:21.305+08:00","terminalId":"10000000001","stan":"201508101781", "cardNumber":"8888880018904568", "cardHolder":{"firstName":"Manoj","lastName":"Singh","gender":"M","dateOfBirth":"1982-06-29","phoneNumber":"9810403543","email":"m.manojsingh@gmail.com","address":"Noida","city":"Noida","state":"UP","zip":"201301","country":"India"}}
-{"responseCode":"0000","responseMsg":"Approved","card":{"status":"OPEN","points":0,"membershipId":"1989611359"}}
+/userprofile/p/{phoneNumber}
+{"responseCode":"0000","responseMsg":"Approved","cardHolder":{"membershipId":"12091020","firstName":"Manoj","lastName":"Singh","phoneNumber":"9810403543","email":"m.manojsingh@gmail.com","address":"Sector 53","city":"Noida","state":"UP","country":"India","isActive":true}}
 
-earnpoint
-{"merchantId":"10000000001","txnDate":"2015-08-17T18:18:21.305+08:00","terminalId":"10000000001","stan":"201508101781", "cardNumber":"8888880018904568","points":340}
-{"responseCode":"0000","responseMsg":"Approved","pointsAvailable":680}
+Registration with card (using phone & card only)
+Request Sent :{"cardNumber":"8888880018904563", "points":0,"cardHolder":{"firstName":"MKS","lastName":"Singh","gender":"M","dateOfBirth":"1982-06-29","phoneNumber":"9810403543","email":"m.manojsingh@gmail.com","address":"Noida","city":"Noida","state":"UP","zip":"201301","country":"India"}}
+process completed ...{"responseCode":"0000","responseMsg":"Approved","membershipId":"1482942087","card":{}}
 
-burnpoint
-{"merchantId":"10000000001","txnDate":"2015-08-17T18:18:21.305+08:00","terminalId":"10000000001","stan":"201508101781", "cardNumber":"8888880018904568","points":20}
-{"responseCode":"0000","responseMsg":"Approved","pointsAvailable":660,"pointsExpireOn":"2015-11-25"}
 
-addpoint
-{"merchantId":"10000000001","txnDate":"2015-08-17T18:18:21.305+08:00","terminalId":"10000000001","stan":"201508101781", "cardNumber":"8888880018904568","points":20}
-{"responseCode":"0000","responseMsg":"Approved","pointsAvailable":660,"pointsExpireOn":"2015-11-25"}
+Registration without card (using phone only)
+Request Sent :{"points":0,"cardHolder":{"firstName":"MKS","lastName":"Singh","gender":"M","dateOfBirth":"1982-06-29","phoneNumber":"9810403543","email":"m.manojsingh@gmail.com","address":"Noida","city":"Noida","state":"UP","zip":"201301","country":"India"}}
+process completed ...{"responseCode":"0000","responseMsg":"Approved","membershipId":"944024774"}
 
-reissuecard
-{"merchantId":"10000000001","txnDate":"2015-08-17T18:18:21.305+08:00","terminalId":"10000000001","stan":"201508101781", "cardNumber":"8888880018904568","newCardNumber":"8888880018904570"}
 
+Registration with card (invalid card number)
+Request Sent :{"cardNumber":"8888880018904123","points":0,"cardHolder":{"firstName":"MKS","lastName":"Singh","gender":"M","dateOfBirth":"1982-06-29","phoneNumber":"9810403901","email":"m.manojsingh@gmail.com","address":"Noida","city":"Noida","state":"UP","zip":"201301","country":"India"}}
+Response received ...{"responseCode":"0000","responseMsg":"Card not found, registration done on Phone number only.","membershipId":"1537441006"}
+
+
+Earnpoint by card
+Request Sent :{"cardNumber":"8888880018904563","points":230}
+Response received ...{"responseCode":"0000","responseMsg":"Approved","pointsAvailable":460}
+	Request Sent :{"cardNumber":"8888880018904876","points":230}
+	Response received ...{"responseCode":"0001","responseMsg":"Card Not found"}
+
+
+Earnpoint by Phone
+Request Sent :{"points":505,"phoneNumber":"9810403543"}
+Response received ...{"responseCode":"0000","responseMsg":"Approved","pointsAvailable":505}
+	Request Sent :{"points":505,"phoneNumber":"9810403549"}
+	Response received ...{"responseCode":"0004"}
+
+Burn point by card
+Request Sent :{"cardNumber":"8888880018904563","points":101}
+Response received ...{"responseCode":"0000","responseMsg":"Approved","pointsAvailable":359}
+	Request Sent :{"cardNumber":"8888880018904654","points":101}
+	Response received ...{"responseCode":"0001","responseMsg":"Card Not found"}
+
+	
+Burn point by Phone
+Request Sent :{"points":90,"phoneNumber":"9810403543"}
+Response received ...{"responseCode":"0000","responseMsg":"Approved","pointsAvailable":325}
+	Request Sent :{"points":90,"phoneNumber":"9810403549"}
+	Response received ...{"responseCode":"0004"}
+
+Get Profile by Card
+Request Sent :{"cardNumber":"8888880018904563","points":505}
+Response received ...{"responseCode":"0000","responseMsg":"Approved","cardHolder":{"membershipId":"1482942087","firstName":"MKS","lastName":"Singh","phoneNumber":"8010551710","email":"m.manojsingh@gmail.com","address":"Noida","city":"Noida","state":"UP","country":"India","isActive":true,"points":359}}
+
+Get Profile by Phone	
+Request Sent :{"points":505,"phoneNumber":"9810403543"}
+Response received ...{"responseCode":"0000","responseMsg":"Approved","cardHolder":{"membershipId":"944024774","firstName":"MKS","lastName":"Singh","phoneNumber":"9810403543","email":"m.manojsingh@gmail.com","address":"Noida","city":"Noida","state":"UP","country":"India","isActive":true,"points":325}}
+	
+Reissue Card
+Request Sent :{"cardNumber":"8888880018904563","points":505,"newCardNumber":"8888880018904570"}
+Response received ...{"responseCode":"0000","responseMsg":"Approved"}
+
+
+NOT SUPPORTED
 deactivate
 "merchantId":"10000000001","txnDate":"2015-08-17T18:18:21.305+08:00","terminalId":"10000000001","stan":"201508101781", "cardNumber":"8888880018904568"}
 

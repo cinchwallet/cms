@@ -50,15 +50,24 @@ public class IssuerController {
 	}
 
 	@GET
-	@Path("/userprofile/{cardNumber}")
+	@Path("/userprofile/c/{cardNumber}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getUserProfile(@PathParam("cardNumber") String cardNumber) {
+	public Response getUserProfileByCard(@PathParam("cardNumber") String cardNumber) {
 		Request request = new Request();
 		request.setCardNumber(cardNumber);
-		return TransactionProcessor.getInstance().processTransaction(request, AppConstant.OperationType.USEPROFILE);
-
+		return TransactionProcessor.getInstance().processTransaction(request, AppConstant.OperationType.USEPROFILE_C);
 	}
 
+	@GET
+	@Path("/userprofile/p/{phoneNumber}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getUserProfileByPhone(@PathParam("phoneNumber") String phoneNumber) {
+		Request request = new Request();
+		request.setPhoneNumber(phoneNumber);
+		return TransactionProcessor.getInstance().processTransaction(request, AppConstant.OperationType.USEPROFILE_P);
+	}
+
+	
 	@POST
 	@Path("/burnpoint")
 	@Consumes(MediaType.APPLICATION_JSON)

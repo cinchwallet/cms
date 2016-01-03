@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.codehaus.jackson.map.ObjectMapper;
+
 import com.thickedge.issuer.constant.AppConstant;
-import com.thickedge.issuer.constant.ResponseCode;
 import com.thickedge.issuer.constant.AppConstant.OperationType;
+import com.thickedge.issuer.constant.ResponseCode;
 import com.thickedge.issuer.core.Request;
 import com.thickedge.issuer.core.Response;
 import com.thickedge.issuer.service.TransactionService;
@@ -29,35 +31,51 @@ public class TransactionProcessor {
 
 	public Response processTransaction(Request request,
 			OperationType operationType) {
-		Response response = null;
-		if (operationType.equals(AppConstant.OperationType.REGISTERUSER)) {
-			response = TransactionService.getInstance().registerUser(request);
-		} else if (operationType.equals(AppConstant.OperationType.CARDDETAIL)) {
-			response = TransactionService.getInstance().getCardDetail(request);
-		} else if (operationType.equals(AppConstant.OperationType.USEPROFILE)) {
-			response = TransactionService.getInstance().getUserProfile(request);
-		} else if (operationType.equals(AppConstant.OperationType.BURNPOINT)) {
-			response = TransactionService.getInstance().burnPoints(request);
-		} else if (operationType.equals(AppConstant.OperationType.EARNPOINT)) {
-			response = TransactionService.getInstance().earnPoints(request);
-		} else if (operationType.equals(AppConstant.OperationType.ADDPOINT)) {
-			response = TransactionService.getInstance().addPoints(request);
-		} else if (operationType.equals(AppConstant.OperationType.REISSUECARD)) {
-			response = TransactionService.getInstance().reissueCard(request);
-			//TODO - reversal and void are not supported for now. Switch will call earnpoint/burn point to achieve this.
-		} else if (operationType.equals(AppConstant.OperationType.REVERSE)) {
-			//this is reversal
-		} else if (operationType.equals(AppConstant.OperationType.CANCEL)) {
-			//this is void
-		} else if (operationType.equals(AppConstant.OperationType.TXNHISTORY)) {
-			//TODO - Txn history is not supported at issuer. Switch will get the txn history from oltp table and send back to client.
-		} else if (operationType.equals(AppConstant.OperationType.DEACTIVATE)) {
-			response = TransactionService.getInstance().deactivateCard(request);
+		ObjectMapper mapper = new ObjectMapper();
+		Response response;
+		try {
+			System.out.println("Request received for :"+ operationType.getType() + " : "+mapper.writeValueAsString(request));
+			response = null;
+			if (operationType.equals(AppConstant.OperationType.REGISTERUSER)) {
+				response = TransactionService.getInstance().registerUser(request);
+			} else if (operationType.equals(AppConstant.OperationType.CARDDETAIL)) {
+				response = TransactionService.getInstance().getCardDetail(request);
+			} else if (operationType.equals(AppConstant.OperationType.USEPROFILE_C)) {
+				response = TransactionService.getInstance().getUserProfileByCard(request);
+			} else if (operationType.equals(AppConstant.OperationType.USEPROFILE_P)) {
+				response = TransactionService.getInstance().getUserProfileByPhone(request);
+			} else if (operationType.equals(AppConstant.OperationType.BURNPOINT)) {
+				response = TransactionService.getInstance().burnPoints(request);
+			} else if (operationType.equals(AppConstant.OperationType.EARNPOINT)) {
+				response = TransactionService.getInstance().earnPoints(request);
+			} else if (operationType.equals(AppConstant.OperationType.ADDPOINT)) {
+				response = TransactionService.getInstance().addPoints(request);
+			} else if (operationType.equals(AppConstant.OperationType.REISSUECARD)) {
+				response = TransactionService.getInstance().reissueCard(request);
+				//TODO - reversal and void are not supported for now. Switch will call earnpoint/burn point to achieve this.
+			} else if (operationType.equals(AppConstant.OperationType.REVERSE)) {
+				//this is reversal
+			} else if (operationType.equals(AppConstant.OperationType.CANCEL)) {
+				//this is void
+			} else if (operationType.equals(AppConstant.OperationType.TXNHISTORY)) {
+				//TODO - Txn history is not supported at issuer. Switch will get the txn history from oltp table and send back to client.
+			} else if (operationType.equals(AppConstant.OperationType.DEACTIVATE)) {
+				response = TransactionService.getInstance().deactivateCard(request);
+			}
+			if(response==null){
+				response = prepareFailureResponse();
+			}
+			populateResponseMsg(response);
+		} catch (Exception e) {
+			e.printStackTrace();
+			response = new Response();
+			response.setResponseCode(ResponseCode.INTERNAL_FAILURE);
 		}
-		if(response==null){
-			response = prepareFailureResponse();
+		try {
+			System.out.println("Response sent : "+mapper.writeValueAsString(response));
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		populateResponseMsg(response);
 		return response;
 	}
 	
@@ -78,6 +96,7 @@ public class TransactionProcessor {
 				e.printStackTrace();
 			}
 		}
-		response.setResponseMsg((String)responseCodeMap.get(response.getResponseCode()));
+		if (response.getResponseMsg() == null)
+			response.setResponseMsg((String)responseCodeMap.get(response.getResponseCode()));
 	}
 }

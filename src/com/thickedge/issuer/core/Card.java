@@ -11,10 +11,18 @@ public class Card {
     private String status;
     private Double balance;
     private Integer points;
-    private Date pointExpireOn;
+    private String pointExpireOn;
     private String membershipId;
+    private String cardProduct;
 
-    public String getMembershipId() {
+    
+    public String getCardProduct() {
+		return cardProduct;
+	}
+	public void setCardProduct(String cardProduct) {
+		this.cardProduct = cardProduct;
+	}
+	public String getMembershipId() {
 		return membershipId;
 	}
 	public void setMembershipId(String membershipId) {
@@ -44,10 +52,10 @@ public class Card {
 	public void setPoints(Integer points) {
 		this.points = points;
 	}
-	public Date getPointExpireOn() {
+	public String getPointExpireOn() {
 		return pointExpireOn;
 	}
-	public void setPointExpireOn(Date pointExpireOn) {
+	public void setPointExpireOn(String pointExpireOn) {
 		this.pointExpireOn = pointExpireOn;
 	}
 
