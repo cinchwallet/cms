@@ -65,12 +65,22 @@ public class TransactionService {
 	public Response getCardDetail(Request request) {
 		Response response = new Response();
 		try {
-			// Get the response from issuer server and prepare the response.
-			Card card = cardDao.getCarddetail(request.getCardNumber());
-			if (!isCardGoodForTxn(card, response)) {
+			Loyalty loyalty = null;
+			if (request.getCardNumber() != null) {
+				Card card = cardDao.getCarddetail(request.getCardNumber());
+				if (!isCardGoodForTxn(card, response)) {
+					return response;
+				}
+				loyalty = cardDao.getLoyaltyDetail(request.getCardNumber());
+			}else{
+				loyalty = cardDao.getLoyaltyDetailForPhone(request.getPhoneNumber());
+			}
+			if(loyalty==null){
+				response.setResponseCode(ResponseCode.INVALID_MEMBER); // failed
 				return response;
 			}
-			response = populateResponse(response, card);
+			response.setPointsAvailable(loyalty.getLoyaltyPoints());
+			response.setMembershipId(loyalty.getMembershipId());
 
 		} catch (Exception e) {
 			response.setResponseCode(ResponseCode.PROCESSOR_NO_RESPONSE);
