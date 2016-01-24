@@ -58,6 +58,15 @@ public class IssuerController {
 		return TransactionProcessor.getInstance().processTransaction(request, AppConstant.OperationType.USEPROFILE_C);
 	}
 
+	@POST
+	@Path("/updateprofile/{membershipId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response updateProfile(@PathParam("membershipId") String membershipId, Request request) {
+		request.setMembershipId(membershipId);
+		return TransactionProcessor.getInstance().processTransaction(request, AppConstant.OperationType.UPDATEPROFILE);
+	}
+
 	@GET
 	@Path("/userprofile/p/{phoneNumber}")
 	@Produces(MediaType.APPLICATION_JSON)

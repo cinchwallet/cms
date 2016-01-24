@@ -146,6 +146,28 @@ public class TransactionService {
 		return response;
 	}
 
+	public Response updateUserProfile(Request request) {
+		Response response = new Response();
+		try {
+			// Get the existing profile for given membershipId
+			CardHolder cardHolder = cardDao.getCardHolderProfileById(request.getMembershipId());
+			if (cardHolder == null) {
+				// customer not found for given card.
+				response.setResponseCode(ResponseCode.INVALID_MEMBER);
+				return response;
+			}
+			request.getCardHolder().setMembershipId(request.getMembershipId());
+			cardDao.updateCardHolderProfile(request.getCardHolder());
+			cardHolder = cardDao.getCardHolderProfileById(request.getMembershipId());
+			response.setCardHolder(cardHolder);
+			response.setResponseCode(ResponseCode.APPROVED); // success
+		} catch (Exception e) {
+			response.setResponseCode(ResponseCode.PROCESSOR_NO_RESPONSE);
+			e.printStackTrace();
+		}
+		return response;
+	}
+
 	
 	public Response burnPoints(Request request) {
 		Response response = new Response();

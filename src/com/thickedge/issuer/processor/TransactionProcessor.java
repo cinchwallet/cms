@@ -44,6 +44,8 @@ public class TransactionProcessor {
 				response = TransactionService.getInstance().getUserProfileByCard(request);
 			} else if (operationType.equals(AppConstant.OperationType.USEPROFILE_P)) {
 				response = TransactionService.getInstance().getUserProfileByPhone(request);
+			} else if (operationType.equals(AppConstant.OperationType.UPDATEPROFILE)) {
+				response = TransactionService.getInstance().updateUserProfile(request);
 			} else if (operationType.equals(AppConstant.OperationType.BURNPOINT)) {
 				response = TransactionService.getInstance().burnPoints(request);
 			} else if (operationType.equals(AppConstant.OperationType.EARNPOINT)) {

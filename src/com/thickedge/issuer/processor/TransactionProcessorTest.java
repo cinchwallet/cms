@@ -22,8 +22,9 @@ public class TransactionProcessorTest {
 		//response = burnPointByCard();
 		//response = burnPointByPhone();
 		//response = getCardDetailByCard();
-		response = getCardDetailByPhone();
+		//response = getCardDetailByPhone();
 		//response = reissueCard();
+		response = updateProfile();
 		System.out.println("Response received ..."+ mapper.writeValueAsString(response));
 	}
 
@@ -31,7 +32,7 @@ public class TransactionProcessorTest {
 		ObjectMapper mapper = new ObjectMapper();
 		Request request = new Request();
 		request.setPoints(505);
-		request.setCardNumber("8888880018904563");
+		request.setCardNumber("8411808093854927");
 		String json = mapper.writeValueAsString(request);
 		System.out.println("Request Sent :"+json);
 		return processor.processTransaction(request, OperationType.USEPROFILE_C);
@@ -124,6 +125,17 @@ public class TransactionProcessorTest {
 		return processor.processTransaction(request, OperationType.EARNPOINT);
 	}
 
+	static Response updateProfile() throws Exception{
+		ObjectMapper mapper = new ObjectMapper();
+		Request request = new Request();
+		request.setMembershipId("6945141");
+		CardHolder cardHolder = new CardHolder();
+		cardHolder.setLastName("Singhania1");
+		request.setCardHolder(cardHolder);
+		String json = mapper.writeValueAsString(request);
+		System.out.println("Request Sent :"+json);
+		return processor.processTransaction(request, OperationType.UPDATEPROFILE);
+	}
 
 
 	/*

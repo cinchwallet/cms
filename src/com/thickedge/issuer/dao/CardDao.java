@@ -230,6 +230,48 @@ public class CardDao extends DBStatements {
 		return customer;
 	}
 
+	public void updateCardHolderProfile(CardHolder cardHolder) {
+		Connection lConnection = null;
+		PreparedStatement lPreparedStatement = null;
+		ResultSet lResultSet = null;
+		CardHolder customer = null;
+		try {
+			lConnection = DBConnection.getTxnConnection();
+			StringBuffer stmt = new StringBuffer("UPDATE CUSTOMER ");
+			stmt.append("set UPDATED_TS= now()");
+			if(cardHolder.getFirstName()!=null)
+				stmt.append(",FIRST_NAME='").append(cardHolder.getFirstName()).append("'");
+			if(cardHolder.getLastName()!=null)
+				stmt.append(",LAST_NAME='").append(cardHolder.getLastName()).append("'");
+			if(cardHolder.getAddress()!=null)
+				stmt.append(",ADDRESS_LINE1='").append(cardHolder.getFirstName()).append("'");
+			if(cardHolder.getCity()!=null)
+				stmt.append(",CITY='").append(cardHolder.getCity()).append("'");
+			if(cardHolder.getState()!=null)
+				stmt.append(",STATE='").append(cardHolder.getState()).append("'");
+			if(cardHolder.getCountry()!=null)
+				stmt.append(",COUNTRY='").append(cardHolder.getCountry()).append("'");
+			if(cardHolder.getPhoneNumber()!=null)
+				stmt.append(",PHONE_WORK='").append(cardHolder.getPhoneNumber()).append("'");
+			if(cardHolder.getPhoneNumber()!=null)
+				stmt.append(",PHONE_HOME='").append(cardHolder.getPhoneNumber()).append("'");
+			if(cardHolder.getPhoneNumber()!=null)
+				stmt.append(",PHONE_MOBILE='").append(cardHolder.getPhoneNumber()).append("'");
+			if(cardHolder.getEmail()!=null)
+				stmt.append(",EMAIL='").append(cardHolder.getEmail()).append("'");
+			
+			stmt.append("WHERE CUSTOMER_ID = '").append(cardHolder.getMembershipId()).append("'");
+			lPreparedStatement = lConnection.prepareStatement(stmt.toString());
+			lPreparedStatement.executeUpdate();
+		} catch (SQLException _sqlException) {
+			_sqlException.printStackTrace();
+		} catch (Exception _Exception) {
+			_Exception.printStackTrace();
+		} finally {
+			DBConnection.closeAll(lResultSet, lPreparedStatement, lConnection);
+		}
+	}
+	
 	private CardHolder populateCustomerDetail(ResultSet lResultSet) throws SQLException {
 		CardHolder customer = null;
 		if (lResultSet != null && lResultSet.next()) {
